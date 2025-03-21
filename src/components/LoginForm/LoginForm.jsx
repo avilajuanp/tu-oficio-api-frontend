@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './LoginForm.css';
+import { useAuth } from '../../context/AuthContext';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('client');
-  const [loggedIn, setLoggedIn] = useState(false);
+  // const [loggedIn, setLoggedIn] = useState(false);
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,7 +20,7 @@ export const LoginForm = () => {
       password,
       userType
     };
-    
+
     try {
       const response = await fetch(`http://localhost:3000/login-${userType}`, {
         method: 'POST',
@@ -29,21 +33,35 @@ export const LoginForm = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // GRaba userdata en el contexto global
+        login({
+          ...data.user, // Assuming your API returns user data (check this)
+          userType,
+          email
+        });
+
         window.alert(data.message);
-        window.location.href = "/";
-        setLoggedIn(true);
+        navigate('/');
       } else {
         window.alert(data.message);
       }
+
+      // if (response.ok) {
+      //   window.alert(data.message);
+      //   window.location.href = "/";
+      //   setLoggedIn(true);
+      // } else {
+      //   window.alert(data.message);
+      // }
 
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
     }
   };
 
-  if (loggedIn) {
-    return <Link to="/App" />;
-  }
+  // if (loggedIn) {
+  //   return <Link to="/App" />;
+  // }
 
   return (
     <div>
@@ -51,47 +69,47 @@ export const LoginForm = () => {
         <div className="mainHeading_content">
           <article className="mainHeading_text">
             <h2 className="mainHeading_title">INICIAR SESIÓN</h2>
-            
-              
-              <form onSubmit={handleSubmit}>
-                <div>
-                  <label htmlFor="email">Correo Electrónico</label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="password">Contraseña</label>
-                  <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="userType">Tipo de Usuario:</label>
-                  <select
-                    id="userType"
-                    value={userType}
-                    onChange={(e) => setUserType(e.target.value)}
-                  >
-                    <option value="client">Cliente</option>
-                    <option value="professional">Profesional</option>
-                  </select>
-                </div>
-                <button className="cta" type="submit">Iniciar Sesión</button><br />
-                <Link to="/signup"><button className="cta" type="submit">Registrarse</button></Link>
-                <Link to="/"><button className="cta" type="submit">Volver</button></Link>
-              </form>
-            
+
+
+            <form onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="email">Correo Electrónico</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="password">Contraseña</label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="userType">Tipo de Usuario:</label>
+                <select
+                  id="userType"
+                  value={userType}
+                  onChange={(e) => setUserType(e.target.value)}
+                >
+                  <option value="client">Cliente</option>
+                  <option value="professional">Profesional</option>
+                </select>
+              </div>
+              <button className="cta" type="submit">Iniciar Sesión</button><br />
+              <Link to="/signup"><button className="cta" type="submit">Registrarse</button></Link>
+              <Link to="/"><button className="cta" type="submit">Volver</button></Link>
+            </form>
+
           </article>
 
           <figure className="mainHeading_image">
-            
+
           </figure>
         </div>
       </header>
