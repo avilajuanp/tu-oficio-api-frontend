@@ -7,10 +7,10 @@ export const SignUpForm = () => {
         firstName: '',
         lastName: '',
         address: '',
-        birthdate: '',
+        birthDate: '',
         phoneNumber: '',
         dni: '',
-        userType: 'cliente',
+        userType: 'client',
         email: '',
         password: '',
         confirmPassword: '',
@@ -30,7 +30,9 @@ export const SignUpForm = () => {
 
         try {
             let response;
-            if (userData.userType === 'cliente') {
+            console.log(JSON.stringify(userData))
+
+            if (userData.userType === 'client') {
                 response = await fetch('http://localhost:3000/add-client', {
                     method: 'POST',
                     headers: {
@@ -85,8 +87,8 @@ export const SignUpForm = () => {
                                     <input type='text' id='address' value={userData.address} onChange={handleChange} />
                                 </div>
                                 <div>
-                                    <label htmlFor='birthdate'>Fecha de Nacimiento (dd/mm/aaaa)</label>
-                                    <input type='text' id='birthdate' value={userData.birthdate} onChange={handleChange} />
+                                    <label htmlFor='birthDate'>Fecha de Nacimiento (dd/mm/aaaa)</label>
+                                    <input type='text' id='birthDate' value={userData.birthDate} onChange={handleChange} />
                                 </div>
                                 <div>
                                     <label htmlFor='phoneNumber'>Número de Teléfono</label>
@@ -99,7 +101,7 @@ export const SignUpForm = () => {
                                 <div>
                                     <label htmlFor='userType'>Tipo de Usuario:</label>
                                     <select id='userType' value={userData.userType} onChange={handleChange}>
-                                        <option value='cliente'>Cliente</option>
+                                        <option value='client'>Cliente</option>
                                         <option value='professional'>Profesional</option>
                                     </select>
                                 </div>

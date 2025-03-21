@@ -11,7 +11,7 @@ export class ProfileForm extends Component {
         this.state = {
         name: '',
         profesion: '',
-        profileType: 'cliente',
+        profileType: 'client',
         objetive: '',
         profileImage: null,
         showAlert: false,
@@ -36,7 +36,7 @@ export class ProfileForm extends Component {
             this.setState({profileType: 'professional'});
             this.setState({ showAlert: true });
         }else{
-            this.setState({profileType: 'cliente'});
+            this.setState({profileType: 'client'});
             this.setState({ showAlert: false });
         }
 

@@ -5,7 +5,7 @@ import './LoginForm.css';
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('cliente');
+  const [userType, setUserType] = useState('client');
   const [loggedIn, setLoggedIn] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -16,7 +16,7 @@ export const LoginForm = () => {
       password,
       userType
     };
-
+    
     try {
       const response = await fetch(`http://localhost:3000/login-${userType}`, {
         method: 'POST',
@@ -79,7 +79,7 @@ export const LoginForm = () => {
                     value={userType}
                     onChange={(e) => setUserType(e.target.value)}
                   >
-                    <option value="cliente">Cliente</option>
+                    <option value="client">Cliente</option>
                     <option value="professional">Profesional</option>
                   </select>
                 </div>
