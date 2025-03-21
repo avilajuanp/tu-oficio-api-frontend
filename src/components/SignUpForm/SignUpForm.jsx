@@ -38,7 +38,7 @@ export const SignUpForm = () => {
                     },
                     body: JSON.stringify(userData),
                 });
-            } else if (userData.userType === 'profesional') {
+            } else if (userData.userType === 'professional') {
                 response = await fetch('http://localhost:3000/add-professional', {
                     method: 'POST',
                     headers: {
@@ -100,7 +100,7 @@ export const SignUpForm = () => {
                                     <label htmlFor='userType'>Tipo de Usuario:</label>
                                     <select id='userType' value={userData.userType} onChange={handleChange}>
                                         <option value='cliente'>Cliente</option>
-                                        <option value='profesional'>Profesional</option>
+                                        <option value='professional'>Profesional</option>
                                     </select>
                                 </div>
                                 <div>
@@ -120,7 +120,7 @@ export const SignUpForm = () => {
                                         onChange={handleChange}
                                     />
                                 </div>
-                                {userData.userType === 'profesional' && (
+                                {userData.userType === 'professional' && (
                                     <>
                                         <div>
                                             <label htmlFor='registrationNumber'>Número de Matrícula</label>

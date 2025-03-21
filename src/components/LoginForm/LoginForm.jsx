@@ -80,7 +80,7 @@ export const LoginForm = () => {
                     onChange={(e) => setUserType(e.target.value)}
                   >
                     <option value="cliente">Cliente</option>
-                    <option value="profesional">Profesional</option>
+                    <option value="professional">Profesional</option>
                   </select>
                 </div>
                 <button className="cta" type="submit">Iniciar Sesión</button><br />

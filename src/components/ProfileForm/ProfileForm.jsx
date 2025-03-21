@@ -33,7 +33,7 @@ export class ProfileForm extends Component {
         const optionSelected = e.target.value;
         this.setState({ objetive: optionSelected });
         if (optionSelected === 'Ofrecer servicios') {
-            this.setState({profileType: 'profesional'});
+            this.setState({profileType: 'professional'});
             this.setState({ showAlert: true });
         }else{
             this.setState({profileType: 'cliente'});
