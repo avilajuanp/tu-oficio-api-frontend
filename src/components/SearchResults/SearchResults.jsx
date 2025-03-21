@@ -109,7 +109,7 @@ const Section = styled.section`
     }
   }
   .map {
-    width: 80%;
+    width: 70%;
     border: 2px solid #000;
     background-image: url("../img/mapa.jpg");
     background-size: cover;

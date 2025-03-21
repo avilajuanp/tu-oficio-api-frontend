@@ -1,89 +1,167 @@
-/* SignUpForm.css */
-.container1 {
-    background-color: #fff;
-    border: 3px solid #000;
-    padding: 20px;
-    border-radius: 10px;
-    width: 60vmin;
-    height: auto;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  h2 {
-    color: #333;
-  }
-  
-  label {
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  input {
+
+.mainHeading {
+width: 100%;
+height: 100%;
+position: absolute;
+padding: 0 40px;
+background-image: linear-gradient(to top, rgb(255, 255, 255) 0%, #fdefe7 100%);
+background-size: auto;
+}
+@media screen and (max-width: 799px) {
+.mainHeading {
+    padding: 0 20px;
+}
+}
+.mainHeading__content {
+max-width: 1110px;
+min-height: 600px;
+left: 50%;
+transform: translateX(-50%);
+display: flex;
+justify-content: space-between;
+align-items: center;
+position: relative;
+}
+@media screen and (max-width: 799px) {
+.mainHeading__content {
+    min-height: 500px;
+}
+}
+.mainHeading__text {
+z-index: 1;
+color: #14213d;
+background-color: rgba(255, 255, 255, 0.2);
+padding: 40px;
+max-width: 620px;
+margin-top: 100px;
+width: 70%;
+backdrop-filter: blur(8px);
+animation: text 0.8s 0.6s ease backwards;
+position: relative;
+font-size: 1.5rem;
+}
+.mainHeading__text:before {
+content: "";
+position: absolute;
+width: 5px;
+height: 100%;
+background-color: rgba(255, 255, 255, 0.5);
+top: 0;
+left: 0;
+animation: line 0.8s 0.6s ease backwards;
+}
+@keyframes line {
+0% {
+    right: 0;
     width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  button[type="submit"] {
-    background-color: #08f;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  button[type="submit"]:hover {
-    background-color: #06d;
-  }
-  
-  Link {
-    text-decoration: none;
-    color: #08f;
-    margin-top: 10px;
-  }
-  
-  Link:hover {
-    text-decoration: underline;
-  }
-  .box {
-    --border-size: 3px;
-    --border-angle: 0turn;
-    width: 60vmin;
-    height: 50vmin;
-    background-image: conic-gradient(
-        from var(--border-angle),
-        #213,
-        #112 50%,
-        #213
-      ),
-      conic-gradient(from var(--border-angle), transparent 20%, #08f, #f03);
-    background-size: calc(100% - (var(--border-size) * 2))
-        calc(100% - (var(--border-size) * 2)),
-      cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-  
-    animation: bg-spin 3s linear infinite;
-    @keyframes bg-spin {
-      to {
-        --border-angle: 1turn;
-      }
-    }
-  
-    &:hover {
-      animation-play-state: paused;
-    }
-  }
-  
-  @property --border-angle {
-    syntax: "<angle>";
-    inherits: true;
-    initial-value: 0turn;
-  }
-  
+    opacity: 0;
+}
+}
+@media screen and (max-width: 799px) {
+.mainHeading__text {
+    padding: 20px;
+    margin: 90px 0 40px 0;
+}
+}
+@keyframes text {
+0% {
+    opacity: 0;
+    transform: translateX(200px);
+}
+}
+.mainHeading__title {
+text-transform: uppercase;
+font-weight: 200;
+letter-spacing: 2px;
+margin-bottom: 24px;
+font-size: 40px;
+color: #14213d;
+}
+@media screen and (max-width: 799px) {
+.mainHeading__title {
+    margin-bottom: 16px;
+    font-size: 28px;
+}
+}
+
+
+.mainHeading__image {
+right: 0;
+max-width: 600px;
+width: 60%;
+height: 600px;
+transform: translatey(100px);
+position: absolute;
+overflow: hidden;
+animation: image 0.6s 0.2s ease backwards;
+background-image: url(/public/img/register1.jpg);
+background-size: cover;
+}
+@media screen and (max-width: 799px) {
+.mainHeading__image {
+    height: 480px;
+    width: 70%;
+    transform: translatey(80px);
+    right: -6%;
+}
+}
+@keyframes image {
+0% {
+    opacity: 0;
+    transform: translatey(200px);
+}
+}
+.mainHeading__image:before, .mainHeading__image:after {
+content: "";
+position: absolute;
+width: 100%;
+height: 0%;
+top: 100%;
+background-image: linear-gradient(to top, #accbee 0%, #e7f0fd 100%);
+opacity: 1;
+left: 0;
+}
+.mainHeading__image:before {
+animation: imageBefore 1s 0.2s ease backwards;
+}
+@keyframes imageBefore {
+0% {
+    height: 100%;
+    top: 0;
+}
+}
+.mainHeading__image:after {
+background-image: linear-gradient(to top, #accbee 0%, #e7f0fd 100%);
+height: 100%;
+top: 0;
+opacity: 0.2;
+}
+.mainHeading__image img {
+width: 100%;
+height: 100%;
+}
+
+.cta {
+padding: 16px 32px;
+color: #ffffff;
+background-color: #0E2E50;
+border: 1px solid rgba(255, 135, 6, 0.4);
+font-family: "Raleway", sans-serif;
+text-transform: uppercase;
+letter-spacing: 2px;
+font-weight: 600;
+margin-top: 32px;
+cursor: pointer;
+box-shadow: inset 0px 0px 0px rgba(99, 116, 152, 0.2);
+transition: all 0.4s ease;
+}
+.cta:hover {
+border: 1px solid rgba(99, 116, 152, 0.1);
+box-shadow: inset 0px -80px 0px rgba(99, 116, 152, 0.1);
+transform: translateY(-5px);
+}
+@media screen and (max-width: 799px) {
+.cta {
+    margin-top: 16px;
+}
+}
