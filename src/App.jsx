@@ -5,6 +5,7 @@ import { SignUpForm } from "./components/SignUpForm/SignUpForm"
 import { SearchResults } from "./components/SearchResults/SearchResults";
 import { ProfileForm } from "./components/ProfileForm/ProfileForm";
 import { AuthProvider } from "./context/AuthContext";
+import React from 'react';
 
 export default function App() {
   return (
