@@ -1,0 +1,269 @@
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { ScrollToTop } from '../ScrollToTop/ScrollToTop';
+import { Navbar } from '../Navbar/Navbar';
+import { Footer } from '../Footer/Footer';
+import axios from 'axios';
+import L from 'leaflet';
+
+// Fix for default Leaflet marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Component to handle map center changes
+function ChangeMapView({ center }) {
+  const map = useMap();
+  map.setView(center, 13);
+  return null;
+}
+
+export const SearchResults = () => {
+  const [professionals, setProfessionals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedProfessional, setSelectedProfessional] = useState(null);
+  const [mapCenter, setMapCenter] = useState([-34.603722, -58.381592]); // Default to Buenos Aires
+
+  // Fetch professionals data
+  useEffect(() => {
+    const fetchProfessionals = async () => {
+      try {
+        const response = await axios.get('http://localhost:YOUR_PORT/api/professionals');
+        
+        // Add geocoding if needed (in actual implementation, this should be done on server)
+        const geoProcessed = await geocodeAddresses(response.data);
+        setProfessionals(geoProcessed);
+        
+        // If we have professionals with addresses, center the map on the first one
+        if (geoProcessed.length > 0 && geoProcessed[0].geocoded) {
+          setMapCenter([geoProcessed[0].geocoded.lat, geoProcessed[0].geocoded.lng]);
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch professionals data');
+        setLoading(false);
+        console.error('Error fetching professionals:', err);
+      }
+    };
+
+    fetchProfessionals();
+  }, []);
+
+  // Function to geocode addresses on the client side (ideally this would be done on the backend)
+  const geocodeAddresses = async (professionals) => {
+    // This is a placeholder - in a real application you would want to 
+    // do this geocoding on the server side and store the results
+    return professionals.map(professional => ({
+      ...professional,
+      geocoded: {
+        lat: -34.603722 + Math.random() * 0.1, // Random coords for demo
+        lng: -58.381592 + Math.random() * 0.1  // Random coords for demo
+      }
+    }));
+  };
+
+  // Handle click on a professional card
+  const handleCardClick = (professional) => {
+    setSelectedProfessional(professional);
+    if (professional.geocoded) {
+      setMapCenter([professional.geocoded.lat, professional.geocoded.lng]);
+    }
+  };
+
+  // Placeholder image if professional doesn't have one
+  const getImage = (professional) => {
+    // Map profession/specialty to images
+    const imageMap = {
+      "Cerrajero": "../img/cerrajero.jpeg",
+      "Gasista": "../img/gasista.jpeg",
+      // Add more mappings as needed
+    };
+    
+    return imageMap[professional.specialty] || "../img/default-professional.jpeg";
+  };
+
+  // Rating placeholder - in real app, calculate from reviews
+  const getRating = (professional) => {
+    return "⭐".repeat(Math.floor(3 + Math.random() * 3)); // Random 3-5 stars for demo
+  };
+
+  if (loading) return <div>Loading professionals...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div>
+      <ScrollToTop />
+      <Navbar />
+      <Section id="recommend">
+        <div className="title">
+          <h2>Profesionales cerca de tu búsqueda</h2>
+        </div>
+        <br />
+        <br />
+        <div className="destinations">
+          <div className="destinations-left">
+            {professionals.map((professional, index) => (
+              <div 
+                className="destination-container" 
+                key={index}
+                onClick={() => handleCardClick(professional)}
+              >
+                <div className={`destination ${selectedProfessional === professional ? 'selected' : ''}`}>
+                  <img src={getImage(professional)} alt={professional.specialty} />
+                  <h3>{professional.firstName} {professional.lastName}</h3>
+                  <h4>{professional.specialty}</h4>
+                  <p>{professional.address}</p>
+                  <div className="info">
+                    <div className="rating">{getRating(professional)}</div>
+                    <div className="experience">{professional.yearsOfExperience} años de experiencia</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="map">
+            <MapContainer 
+              center={mapCenter} 
+              zoom={13} 
+              style={{ height: "100%", width: "100%", borderRadius: "1rem" }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              {/* Update map center when selected professional changes */}
+              <ChangeMapView center={mapCenter} />
+              
+              {/* Add markers for each professional */}
+              {professionals.map((professional, index) => {
+                // Skip professionals without geocoded coordinates
+                if (!professional.geocoded) return null;
+                
+                return (
+                  <Marker
+                    key={index}
+                    position={[professional.geocoded.lat, professional.geocoded.lng]}
+                    eventHandlers={{
+                      click: () => {
+                        setSelectedProfessional(professional);
+                      },
+                    }}
+                  >
+                    <Popup>
+                      <div>
+                        <h3>{professional.firstName} {professional.lastName}</h3>
+                        <p><strong>{professional.specialty}</strong></p>
+                        <p>{professional.address}</p>
+                        <p>Teléfono: {professional.phoneNumber}</p>
+                        <p>Experiencia: {professional.yearsOfExperience} años</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
+            </MapContainer>
+          </div>
+        </div>
+      </Section>
+      <Footer />
+    </div>
+  );
+};
+
+const Section = styled.section`
+  padding: 1rem 0;
+  .title {
+    text-align: center;
+  }
+  .destinations {
+    display: flex;
+    justify-content: stretch;
+  }
+  .destinations-left {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding-right: 1rem;
+  }
+  .destination-container {
+    margin-bottom: 2rem;
+    width: 100%;
+    cursor: pointer;
+  }
+  .destination {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-color: #8338ec14;
+    border-radius: 1rem;
+    transition: 0.3s ease-in-out;
+    &:hover {
+      transform: translateX(0.4rem) translateY(-1rem);
+      box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    }
+    &.selected {
+      background-color: #8338ec30;
+      transform: translateX(0.4rem) translateY(-1rem);
+      box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    }
+    img {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+    }
+    .info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      
+      .rating {
+        color: gold;
+        font-size: 1.2rem;
+      }
+      
+      .experience {
+        font-size: 0.9rem;
+        color: #555;
+      }
+    }
+  }
+  .map {
+    width: 70%;
+    height: 80vh;
+    border-radius: 1rem;
+    overflow: hidden;
+    margin-left: 4%;
+    margin-right: 4%;
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 10px;
+  }
+  @media screen and (max-width: 768px) {
+    .destinations {
+      flex-direction: column;
+      align-items: center;
+    }
+    .destinations-left {
+      width: 100%;
+      max-height: none;
+      padding-right: 0;
+      margin-bottom: 1rem;
+    }
+    .map {
+      width: 100%;
+      height: 50vh;
+      margin: 0;
+    }
+  }
+`;
