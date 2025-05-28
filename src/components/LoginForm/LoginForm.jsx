@@ -32,13 +32,58 @@ export const LoginForm = () => {
 
       const data = await response.json();
 
+      // Log the complete API response to understand its structure
+      console.log(`Login API response for ${userType}:`, data);
+
       if (response.ok) {
-        // GRaba userdata en el contexto global
-        login({
-          ...data.user, // Assuming your API returns user data (check this)
-          userType,
-          email
-        });
+        // Extract user ID from the response
+        // The ID might be in different places depending on the API response structure
+        let userId = null;
+
+        // Try to find the user ID in common locations
+        if (data.user && data.user.id) {
+          userId = data.user.id;
+        } else if (data.id) {
+          userId = data.id;
+        } else if (data.userId) {
+          userId = data.userId;
+        } else if (data.clientId) {
+          userId = data.clientId;
+        } else if (data.professionalId) {
+          userId = data.professionalId;
+        }
+
+        // Handle different response structures for client vs professional
+        let userData = {};
+
+        if (userType === 'professional') {
+          // For professionals, create userData directly from the response
+          userData = {
+            userType,
+            email,
+            id: userId,
+            // Add any other fields that might be directly in the response
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            phoneNumber: data.phoneNumber || '',
+            address: data.address || '',
+            specialty: data.specialty || '',
+            yearsOfExperience: data.yearsOfExperience || 0,
+            coordinates: data.coordinates || null
+          };
+        } else {
+          // For clients, use the existing structure with data.user
+          userData = {
+            ...data.user, // Assuming your API returns user data for clients
+            userType,
+            email,
+            id: userId, // Add the ID to the user object
+            coordinates: data.coordinates // Add the coordinates to the user object
+          };
+        }
+
+        console.log('User data being saved:', userData);
+        login(userData);
 
         window.alert(data.message);
         navigate('/');

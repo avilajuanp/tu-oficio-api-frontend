@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState(null);
 
-  // Chequea si el usuario está logeado cuando carga la App
+  // Chequea si el usuario está logueado cuando carga la App
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
