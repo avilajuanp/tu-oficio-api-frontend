@@ -7,9 +7,6 @@ import { Navbar } from '../Navbar/Navbar';
 import { Footer } from '../Footer/Footer';
 import axios from 'axios';
 import L from 'leaflet';
-import { ProfessionalService } from '../../services/ProfessionalService';
-import { ClientService } from '../../services/ClientService';
-import { useAuth } from '../../context/AuthContext';
 
 // Fix for default Leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -17,16 +14,6 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-// Custom red marker icon for client location
-const clientIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
 });
 
 // Component to handle map center changes
@@ -37,46 +24,27 @@ function ChangeMapView({ center }) {
 }
 
 export const SearchResults = () => {
-  const { isLoggedIn, user } = useAuth();
   const [professionals, setProfessionals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedProfessional, setSelectedProfessional] = useState(null);
-  const [mapCenter, setMapCenter] = useState([-32.8908, -68.8272]); // Default to Mendoza, Argentina
-  const [clientLocation, setClientLocation] = useState(null);
-
-  // Get client location if logged in
-  useEffect(() => {
-    console.log('Authentication status:', { isLoggedIn, user });
-
-    if (isLoggedIn && user && user.coordinates) {
-      console.log('Using client coordinates from login data:', user.coordinates);
-      const { lat, lng } = user.coordinates;
-      setClientLocation([lat, lng]);
-      setMapCenter([lat, lng]); // Center map on client location
-      console.log('Client location and map center set');
-    } else {
-      console.log('Not setting client location because:', {
-        isLoggedIn,
-        hasUser: !!user,
-        hasCoordinates: user ? !!user.coordinates : false
-      });
-    }
-  }, [isLoggedIn, user]);
+  const [mapCenter, setMapCenter] = useState([-34.603722, -58.381592]); // Default to Buenos Aires
 
   // Fetch professionals data
   useEffect(() => {
     const fetchProfessionals = async () => {
       try {
-        const data = await ProfessionalService.getAllProfessionals();
-        setProfessionals(data);
-
-        // If client location is not available and we have professionals with coordinates, 
-        // center the map on the first one
-        if (!clientLocation && data.length > 0 && data[0].coordinates) {
-          setMapCenter([data[0].coordinates.lat, data[0].coordinates.lng]);
+        const response = await axios.get('http://localhost:YOUR_PORT/api/professionals');
+        
+        // Add geocoding if needed (in actual implementation, this should be done on server)
+        const geoProcessed = await geocodeAddresses(response.data);
+        setProfessionals(geoProcessed);
+        
+        // If we have professionals with addresses, center the map on the first one
+        if (geoProcessed.length > 0 && geoProcessed[0].geocoded) {
+          setMapCenter([geoProcessed[0].geocoded.lat, geoProcessed[0].geocoded.lng]);
         }
-
+        
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch professionals data');
@@ -86,13 +54,26 @@ export const SearchResults = () => {
     };
 
     fetchProfessionals();
-  }, [clientLocation]);
+  }, []);
+
+  // Function to geocode addresses on the client side (ideally this would be done on the backend)
+  const geocodeAddresses = async (professionals) => {
+    // This is a placeholder - in a real application you would want to 
+    // do this geocoding on the server side and store the results
+    return professionals.map(professional => ({
+      ...professional,
+      geocoded: {
+        lat: -34.603722 + Math.random() * 0.1, // Random coords for demo
+        lng: -58.381592 + Math.random() * 0.1  // Random coords for demo
+      }
+    }));
+  };
 
   // Handle click on a professional card
   const handleCardClick = (professional) => {
     setSelectedProfessional(professional);
-    if (professional.coordinates) {
-      setMapCenter([professional.coordinates.lat, professional.coordinates.lng]);
+    if (professional.geocoded) {
+      setMapCenter([professional.geocoded.lat, professional.geocoded.lng]);
     }
   };
 
@@ -104,7 +85,7 @@ export const SearchResults = () => {
       "Gasista": "../img/gasista.jpeg",
       // Add more mappings as needed
     };
-
+    
     return imageMap[professional.specialty] || "../img/default-professional.jpeg";
   };
 
@@ -157,31 +138,19 @@ export const SearchResults = () => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-
+              
               {/* Update map center when selected professional changes */}
               <ChangeMapView center={mapCenter} />
-
-              {console.log('Rendering map with client location from login data:', clientLocation)}
-
+              
               {/* Add markers for each professional */}
               {professionals.map((professional, index) => {
-                // Skip professionals without coordinates
-                if (!professional.coordinates) return null;
-
-                // Check if this professional has the same coordinates as the logged-in user
-                // If so, we'll still show their marker but with a different key to avoid conflicts
-                const isSameLocation =
-                  isLoggedIn &&
-                  user &&
-                  user.coordinates &&
-                  clientLocation &&
-                  Math.abs(professional.coordinates.lat - user.coordinates.lat) < 0.0001 &&
-                  Math.abs(professional.coordinates.lng - user.coordinates.lng) < 0.0001;
-
+                // Skip professionals without geocoded coordinates
+                if (!professional.geocoded) return null;
+                
                 return (
                   <Marker
-                    key={`professional-${index}`}
-                    position={[professional.coordinates.lat, professional.coordinates.lng]}
+                    key={index}
+                    position={[professional.geocoded.lat, professional.geocoded.lng]}
                     eventHandlers={{
                       click: () => {
                         setSelectedProfessional(professional);
@@ -195,29 +164,11 @@ export const SearchResults = () => {
                         <p>{professional.address}</p>
                         <p>Teléfono: {professional.phoneNumber}</p>
                         <p>Experiencia: {professional.yearsOfExperience} años</p>
-                        {isSameLocation && <p><strong>Esta es también tu ubicación como usuario</strong></p>}
                       </div>
                     </Popup>
                   </Marker>
                 );
               })}
-
-              {/* Add client location marker if logged in and location available - rendered last to be on top */}
-              {isLoggedIn && clientLocation && (
-                <Marker
-                  key="client-location"
-                  position={clientLocation}
-                  icon={clientIcon}
-                  zIndexOffset={1000} // Ensure this marker is on top
-                >
-                  <Popup>
-                    <div>
-                      <h3>Tu ubicación</h3>
-                      <p>Esta es tu ubicación proporcionada al iniciar sesión</p>
-                    </div>
-                  </Popup>
-                </Marker>
-              )}
             </MapContainer>
           </div>
         </div>
@@ -241,9 +192,14 @@ const Section = styled.section`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding-right: 1rem;
   }
   .destination-container {
     margin-bottom: 2rem;
+    width: 100%;
+    cursor: pointer;
   }
   .destination {
     padding: 1rem;
@@ -257,34 +213,41 @@ const Section = styled.section`
       transform: translateX(0.4rem) translateY(-1rem);
       box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     }
+    &.selected {
+      background-color: #8338ec30;
+      transform: translateX(0.4rem) translateY(-1rem);
+      box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    }
     img {
       width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 0.5rem;
     }
     .info {
       display: flex;
-      align-items: center;
-      .services {
-        display: flex;
-        gap: 0.3rem;
-        img {
-          border-radius: 1rem;
-          background-color: #4d2ddb84;
-          width: 2rem;
-          padding: 0.3rem 0.4rem;
-        }
+      flex-direction: column;
+      gap: 0.5rem;
+      
+      .rating {
+        color: gold;
+        font-size: 1.2rem;
+      }
+      
+      .experience {
+        font-size: 0.9rem;
+        color: #555;
       }
     }
   }
   .map {
     width: 70%;
-    border: 2px solid #000;
+    height: 80vh;
     border-radius: 1rem;
-    //background-image: url("../img/mapa.jpg");
-    //background-size: cover;
-    //padding: 2.5%;
-    margin-top:1%;
-    margin-right:4%;
-    margin-left:4%;
+    overflow: hidden;
+    margin-left: 4%;
+    margin-right: 4%;
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 10px;
   }
   @media screen and (max-width: 768px) {
     .destinations {
@@ -293,11 +256,14 @@ const Section = styled.section`
     }
     .destinations-left {
       width: 100%;
+      max-height: none;
+      padding-right: 0;
+      margin-bottom: 1rem;
     }
     .map {
       width: 100%;
-      margin-top: 1rem;
+      height: 50vh;
+      margin: 0;
     }
   }
-}
-`
+`;

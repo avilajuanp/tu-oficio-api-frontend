@@ -3,18 +3,26 @@ import styled from "styled-components";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { VscChromeClose } from "react-icons/vsc";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export const Navbar = () => {
   const [navbarState, setNavbarState] = useState(false);
+  const { user, isLoggedIn, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    // redirigir a Home???
+  };
+
   return (
     <>
       <Nav>
         <div className="brand">
           <div className="container">
             <a href="/#">
-              <img src={"../img/tuoficio_logo.png"} alt="" style={{ width: '500px', height: 'auto' }}/>
+              <img src={"../img/tuoficio_logo.png"} alt="" style={{ width: '500px', height: 'auto' }} />
             </a>
-            
+
           </div>
           <div className="toggle">
             {navbarState ? (
@@ -38,14 +46,25 @@ export const Navbar = () => {
           <li>
             <a href="/#testimonials">Reseñas</a>
           </li>
-          <li>
-            <Link to="/profile-settings"><a>Mi Perfil</a></Link>
-          </li>
+          {isLoggedIn && (
+            <li>
+              <Link to="/profile-settings"><a>Mi Perfil</a></Link>
+            </li>
+          )}
         </ul>
-        <Link to="/login" ><button>Iniciar Sesion</button></Link>
+
+        {isLoggedIn ? (
+          <div className="user-welcome">
+            <span>Bienvenido {user.firstName || user.email}</span>
+            <button onClick={handleLogout}>Cerrar Sesión</button>
+          </div>
+        ) : (
+          <Link to="/login"><button>Iniciar Sesion</button></Link>
+        )}
       </Nav>
+
       <ResponsiveNav state={navbarState}>
-        
+
         <ul>
           <li>
             <a href="#home" onClick={() => setNavbarState(false)}>
@@ -67,6 +86,11 @@ export const Navbar = () => {
               Acceder
             </a>
           </li>
+          {isLoggedIn && (
+            <li>
+              <a onClick={handleLogout}>Cerrar Sesión</a>
+            </li>
+          )}
         </ul>
       </ResponsiveNav>
     </>
@@ -129,6 +153,23 @@ const Nav = styled.nav`
       background-color: #023e8a;
     }
   }
+  .user-welcome {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    
+    span {
+      color: #FF6922;
+      font-weight: bold;
+    }
+    
+    button {
+      background-color: #FF6922;
+      &:hover {
+        background-color: #d24e11;
+      }
+    }
+  }
   @media screen and (min-width: 280px) and (max-width: 1080px) {
     .brand {
       display: flex;
@@ -143,6 +184,9 @@ const Nav = styled.nav`
       display: none;
     }
     button {
+      display: none;
+    }
+    .user-welcome {
       display: none;
     }
   }
